@@ -1,7 +1,6 @@
 import app from 'firebase/app';
 import 'firebase/database';
 import 'firebase/auth';
-import { resolve } from 'url';
 
 let firebaseConfig = {
     apiKey: "AIzaSyCPLRu0xafOD5wKertSFiJbrLNkmiZz2IE",
@@ -18,6 +17,7 @@ class Firebase{
 
     constructor(){
         app.initializeApp(firebaseConfig);
+        this.app = app.database();
     }
 
     login(email, password){
