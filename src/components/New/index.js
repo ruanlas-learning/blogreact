@@ -13,7 +13,8 @@ class New extends Component {
             imagem: null,
             url: '',
             descricao: '',
-            alert: ''
+            alert: '',
+            progress: 0
         };
         this.cadastrar = this.cadastrar.bind(this);
         this.handleFile = this.handleFile.bind(this);
@@ -30,12 +31,13 @@ class New extends Component {
     cadastrar = async(event) => {
         event.preventDefault();
 
-        if(this.state.titulo !== '' && this.state.imagem !== '' && this.state.descricao !== ''){
+        if( this.state.titulo !== '' && this.state.imagem !== null &&
+         this.state.descricao !== '' && this.state.url !== '' ){
             let posts = firebase.app.ref('posts');
             let chave = posts.push().key;
             await posts.child(chave).set({
                 titulo: this.state.titulo,
-                imagem: this.state.imagem,
+                imagem: this.state.url,
                 descricao: this.state.descricao,
                 autor: localStorage.nome
             });
@@ -75,6 +77,8 @@ class New extends Component {
         await uploadTask.on('state_changed', 
         (snapshot) => {
             //progress
+            const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+            this.setState({ progress: progress });
         },
         (error) => {
             //error
@@ -82,6 +86,11 @@ class New extends Component {
         },
         () => {
             //sucesso
+            firebase.storage.ref(`images/${currentUid}`)
+                .child(imagem.name).getDownloadURL()
+                .then(url => {
+                    this.setState({ url: url });
+                });
         });
     }
 
@@ -96,6 +105,11 @@ class New extends Component {
                     <label>Imagem:</label><br/>
                     <input type="file" 
                         onChange={ this.handleFile } /><br/>
+                    {this.state.url !== '' ? 
+                        <img src={this.state.url} width="250" height="150" alt="Capa do post" />
+                        :
+                        <progress value={this.state.progress} max="100" />
+                    }
                     <label>Titulo:</label><br/>
                     <input type="text" placeholder="Nome do post" value={this.state.titulo} autoFocus
                         onChange={ (e)=>this.setState({titulo: e.target.value}) } /><br/>
